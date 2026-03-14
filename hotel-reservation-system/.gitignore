@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+.venv/
+
+# uv
+uv.lock
+
+# Database
+*.db
+
+# pytest
+.pytest_cache/
+
+# ruff
+.ruff_cache/
+
+# pyright
+pyrightconfig.json
