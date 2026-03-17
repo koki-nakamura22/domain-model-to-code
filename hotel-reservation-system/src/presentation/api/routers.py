@@ -11,7 +11,6 @@ from src.application.use_cases.cancel_reservation import CancelReservationComman
 from src.application.use_cases.change_room_status import ChangeRoomStatusCommand, ChangeRoomStatusUseCase
 from src.application.use_cases.check_in import CheckInCommand, CheckInUseCase
 from src.application.use_cases.check_out import CheckOutCommand, CheckOutUseCase
-from src.application.use_cases.confirm_reservation import ConfirmReservationCommand, ConfirmReservationUseCase
 from src.application.use_cases.create_reservation import CreateReservationCommand, CreateReservationUseCase
 from src.application.use_cases.modify_reservation import ModifyReservationCommand, ModifyReservationUseCase
 from src.application.use_cases.process_payment import ProcessPaymentCommand, ProcessPaymentUseCase
@@ -218,21 +217,6 @@ async def process_payment(
             card_info=request.card_info,
         )
     )
-
-    if result.success:
-        confirm_use_case = ConfirmReservationUseCase(
-            reservation_repo=c.reservation_repo,
-            event_publisher=c.event_publisher,
-        )
-        try:
-            await confirm_use_case.execute(
-                ConfirmReservationCommand(
-                    reservation_id=request.reservation_id,
-                    payment_id=result.payment_id,
-                )
-            )
-        except ValueError as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
 
     return PaymentResponse(
         payment_id=result.payment_id,

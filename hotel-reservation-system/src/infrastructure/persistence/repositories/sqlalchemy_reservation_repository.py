@@ -107,7 +107,7 @@ class SqlAlchemyReservationRepository:
     async def save(self, reservation: Reservation) -> None:
         record = _to_record(reservation)
         await self._session.merge(record)
-        await self._session.commit()
+        await self._session.flush()
 
     async def find_expired_held(self, now: datetime.datetime) -> list[Reservation]:
         result = await self._session.execute(

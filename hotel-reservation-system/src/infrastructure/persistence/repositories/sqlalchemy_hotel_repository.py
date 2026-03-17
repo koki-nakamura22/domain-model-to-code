@@ -132,7 +132,7 @@ class SqlAlchemyHotelRepository:
     async def save(self, hotel: Hotel) -> None:
         record = _to_record(hotel)
         await self._session.merge(record)
-        await self._session.commit()
+        await self._session.flush()
 
     async def find_all(self) -> list[Hotel]:
         result = await self._session.execute(select(HotelRecord))

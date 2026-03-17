@@ -72,7 +72,7 @@ class SqlAlchemyRoomTypeRepository:
             occupancy_adjustments_json=adj_json,
         )
         await self._session.merge(record)
-        await self._session.commit()
+        await self._session.flush()
 
 
 # === RatePlan ===
@@ -122,7 +122,7 @@ class SqlAlchemyRatePlanRepository:
             additional_charge_currency=rate_plan.additional_charge_per_person.currency.value,
         )
         await self._session.merge(record)
-        await self._session.commit()
+        await self._session.flush()
 
 
 # === Guest ===
@@ -152,7 +152,7 @@ class SqlAlchemyGuestRepository:
             phone_number=guest.contact_info.phone_number,
         )
         await self._session.merge(record)
-        await self._session.commit()
+        await self._session.flush()
 
 
 # === Payment ===
@@ -203,4 +203,4 @@ class SqlAlchemyPaymentRepository:
             processed_at=payment.processed_at.isoformat() if payment.processed_at else None,
         )
         await self._session.merge(record)
-        await self._session.commit()
+        await self._session.flush()

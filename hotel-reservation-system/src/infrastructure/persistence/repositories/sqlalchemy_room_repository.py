@@ -76,4 +76,4 @@ class SqlAlchemyRoomRepository:
     async def save(self, room: Room) -> None:
         record = _to_record(room)
         await self._session.merge(record)
-        await self._session.commit()
+        await self._session.flush()

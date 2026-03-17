@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+import contextlib
 import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
@@ -10,6 +12,7 @@ from fastapi import FastAPI
 
 from src.infrastructure.persistence.database import engine
 from src.infrastructure.persistence.models.db_models import Base
+from src.presentation.api.lifespan import run_expire_reservations_loop
 from src.presentation.api.routers import admin_router, guest_router, payment_router, reservation_router
 
 logging.basicConfig(level=logging.INFO)
@@ -19,7 +22,11 @@ logging.basicConfig(level=logging.INFO)
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    task = asyncio.create_task(run_expire_reservations_loop())
     yield
+    task.cancel()
+    with contextlib.suppress(asyncio.CancelledError):
+        await task
 
 
 app = FastAPI(
