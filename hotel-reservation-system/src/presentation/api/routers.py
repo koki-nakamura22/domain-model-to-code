@@ -7,13 +7,13 @@ import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.application.sagas.process_payment_saga import ProcessPaymentCommand, ProcessPaymentSaga
 from src.application.use_cases.cancel_reservation import CancelReservationCommand, CancelReservationUseCase
 from src.application.use_cases.change_room_status import ChangeRoomStatusCommand, ChangeRoomStatusUseCase
 from src.application.use_cases.check_in import CheckInCommand, CheckInUseCase
 from src.application.use_cases.check_out import CheckOutCommand, CheckOutUseCase
 from src.application.use_cases.create_reservation import CreateReservationCommand, CreateReservationUseCase
 from src.application.use_cases.modify_reservation import ModifyReservationCommand, ModifyReservationUseCase
-from src.application.use_cases.process_payment import ProcessPaymentCommand, ProcessPaymentUseCase
 from src.domain.models.guest import ContactInfo, Guest, GuestName
 from src.domain.models.hotel import CheckInOutPolicy, Hotel
 from src.domain.models.payment import PaymentMethod
@@ -204,12 +204,13 @@ async def process_payment(
     request: ProcessPaymentRequest, session: AsyncSession = Depends(get_session)
 ) -> PaymentResponse:
     c = _container(session)
-    use_case = ProcessPaymentUseCase(
+    saga = ProcessPaymentSaga(
         payment_repo=c.payment_repo,
         payment_gateway=c.payment_gateway,
+        reservation_repo=c.reservation_repo,
         event_publisher=c.event_publisher,
     )
-    result = await use_case.execute(
+    result = await saga.execute(
         ProcessPaymentCommand(
             reservation_id=request.reservation_id,
             amount=Money(amount=request.amount),

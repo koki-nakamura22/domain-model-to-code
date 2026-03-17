@@ -7,8 +7,6 @@ from collections.abc import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.application.event_handlers.no_show_detected_notification_handler import NoShowDetectedNotificationHandler
-from src.application.event_handlers.payment_completed_handler import PaymentCompletedHandler
-from src.application.event_handlers.payment_failed_handler import PaymentFailedHandler
 from src.application.event_handlers.payment_failed_notification_handler import PaymentFailedNotificationHandler
 from src.application.event_handlers.reservation_cancelled_notification_handler import (
     ReservationCancelledNotificationHandler,
@@ -23,7 +21,6 @@ from src.application.event_handlers.reservation_modified_notification_handler im
 from src.application.event_handlers.reservation_modified_payment_handler import ReservationModifiedPaymentHandler
 from src.domain.events.events import (
     NoShowDetected,
-    PaymentCompleted,
     PaymentFailed,
     ReservationCancelled,
     ReservationConfirmed,
@@ -69,24 +66,6 @@ class Container:
 
     def _register_event_handlers(self) -> None:
         ep = self.event_publisher
-
-        # 決済完了 → 予約確定
-        ep.subscribe(
-            PaymentCompleted,
-            PaymentCompletedHandler(
-                reservation_repo=self.reservation_repo,
-                event_publisher=self.event_publisher,
-            ).handle,
-        )
-
-        # 決済失敗 → 仮予約失効
-        ep.subscribe(
-            PaymentFailed,
-            PaymentFailedHandler(
-                reservation_repo=self.reservation_repo,
-                event_publisher=self.event_publisher,
-            ).handle,
-        )
 
         # 予約変更 → 差額決済/返金
         ep.subscribe(
